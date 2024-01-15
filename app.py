@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import csv
 import time
 import schedule
+import git
+from git import Repo
 
 def open_website(url):
     try:
@@ -91,13 +93,33 @@ def scrape_and_save_data(url, output_csv):
 
     except Exception as e:
         print(f"An error occurred: {e}")
+def commit_to_github(repo_path, file_path, commit_message):
+    try:
+        repo = Repo(repo_path)
+
+        # Add the file to the staging area
+        repo.git.add(file_path)
+
+        # Commit the changes
+        repo.index.commit(commit_message)
+
+        # Push the changes to the remote repository
+        origin = repo.remote(name='origin')
+        origin.push()
+
+        print(f"Changes committed and pushed to GitHub.")
+    except Exception as e:
+        print(f"An error occurred while committing to GitHub: {e}")
 
 def job():
     website_url = "https://amis.co.ke/site/market?product=&per_page=3000"
     output_csv = "market_data.csv"
+    repo_path = r"C:\Users\Dell\Documents\GitHub\defmisportal2\food-data-api"  # Replace with the actual path to your local Git repository
+    commit_message = "Update market data"
 
     open_website(website_url)
     scrape_and_save_data(website_url, output_csv)
+    commit_to_github(repo_path, output_csv, commit_message)
 
 # Schedule the job to run every 6 hours
 schedule.every(6).hours.do(job)
